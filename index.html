@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitMaster | 3.3 Version Control Systems Akademi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            git: {
+              orange: '#f05032',
+              dark: '#0d1117',
+              surface: '#161b22',
+              border: '#30363d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#090d16] text-slate-100 h-screen w-screen flex flex-col overflow-hidden select-none">
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Üst Menü / Navbar -->
+  <header class="h-14 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="18" r="3"></circle>
+          <circle cx="6" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <path d="M18 9a9 9 0 0 1-9 9"></path>
+          <line x1="6" y1="9" x2="6" y2="21"></line>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-sm tracking-tight text-white flex items-center gap-2">
+          GitMaster <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono font-bold">3.3 VCS MÜFREDATI</span>
+        </h1>
+        <p class="text-[10px] text-slate-400">3.3.1 - 3.3.11 Tam Kapsam İnteraktif Laboratuvarı</p>
+      </div>
+    </div>
+
+    <!-- Mod Sekmeleri -->
+    <div class="flex items-center bg-slate-950/70 p-1 rounded-xl border border-slate-800">
+      <button id="tab-practice" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5">
+        <span>🎮</span>
+        <span>Pratik & Senaryolar (11 Seviye)</span>
+      </button>
+      <button id="tab-learn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+        <span>📖</span>
+        <span>3.3 Konu Anlatımı</span>
+      </button>
+      <button id="tab-sandbox" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+        <span>🧪</span>
+        <span>Serbest Mod</span>
+      </button>
+    </div>
+
+    <!-- İlerleme & Yardım Araçları -->
+    <div class="flex items-center gap-4">
+      <div class="hidden md:flex flex-col items-end">
+        <span id="overall-progress-text" class="text-[11px] font-mono text-slate-400">%0 Tamamlandı (0/11)</span>
+        <div class="w-28 h-2 bg-slate-800 rounded-full overflow-hidden mt-1 border border-slate-700/50">
+          <div id="overall-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <button id="btn-cheatsheet" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>Kopya Kağıdı</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Ana İçerik Grid -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- SOL PANEL (Konu veya Pratik Senaryo) -->
+    <section class="w-full lg:w-5/12 border-r border-slate-800 flex flex-col bg-slate-900/40 shrink-0 overflow-hidden">
+      
+      <!-- PRATİK MODU PANELİ -->
+      <div id="panel-practice" class="flex-1 flex flex-col overflow-hidden">
+        
+        <!-- Üst: Seviye Başlığı & Senaryo Kartı -->
+        <div class="p-4 border-b border-slate-800/80 overflow-y-auto max-h-[46%] bg-slate-900/60">
+          <div class="flex items-center justify-between mb-2">
+            <span id="challenge-badge" class="px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              3.3.1 Başlangıç
+            </span>
+            <div class="flex items-center gap-2">
+              <button id="btn-hint" class="text-xs text-amber-400 hover:text-amber-300 font-semibold px-2 py-1 rounded bg-amber-950/30 border border-amber-500/30 flex items-center gap-1 transition-all">
+                <span>💡 İpucu</span>
+              </button>
+              <button id="btn-solution" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold px-2 py-1 rounded bg-cyan-950/30 border border-cyan-500/30 flex items-center gap-1 transition-all">
+                <span>🎯 Çözüm</span>
+              </button>
+              <button id="btn-reset-level" class="text-xs text-rose-400 hover:text-rose-300 font-semibold px-2 py-1 rounded bg-rose-950/30 border border-rose-500/30 flex items-center gap-1 transition-all" title="Seviyeyi Sıfırla">
+                <span>↺</span>
+              </button>
+            </div>
+          </div>
+
+          <h2 id="challenge-title" class="text-base font-bold text-white mb-1.5 leading-snug">
+            1. Kimlik Yapılandırma & Depo Başlatma
+          </h2>
+          <p id="challenge-story" class="text-xs text-slate-300 leading-relaxed bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/80">
+            Müfredat adımlarını takip ederek Git komutlarını çalıştırın.
+          </p>
+
+          <!-- Hedefler (Checklist) -->
+          <div class="mt-3">
+            <h4 class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+              <span>Görev Hedefleri</span>
+              <span class="text-emerald-400 text-xs">• Canlı Doğrulama</span>
+            </h4>
+            <div id="challenge-goals" class="space-y-1.5">
+              <!-- Dinamik hedefler app.js tarafından doldurulur -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Alt: Seviyeler Listesi (Hızlı Geçiş) -->
+        <div class="flex-1 flex flex-col p-3 overflow-hidden bg-slate-950/30">
+          <div class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
+            <span>3.3 Müfredat Seviyeleri (11 Bölüm)</span>
+            <span class="text-slate-500 text-[10px]">Tıklayıp doğrudan geçebilirsiniz</span>
+          </div>
+          <div id="levels-list" class="flex-1 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+            <!-- Dinamik seviye butonları -->
+          </div>
+        </div>
+      </div>
+
+      <!-- KONU ANLATIMI MODU PANELİ -->
+      <div id="panel-learn" class="hidden flex-1 flex overflow-hidden">
+        <div class="w-5/12 border-r border-slate-800 p-2.5 overflow-y-auto space-y-1.5 scrollbar-thin bg-slate-950/40" id="topics-menu-list">
+          <!-- 3.3.1 - 3.3.11 konu başlıkları -->
+        </div>
+        <div class="flex-1 p-5 overflow-y-auto scrollbar-thin bg-slate-900/40" id="topic-detail-area">
+          <!-- Dinamik konu HTML içeriği -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SAĞ PANEL (Görsel Dal Grafiği + İnteraktif Terminal) -->
+    <section class="flex-1 flex flex-col h-full overflow-hidden bg-[#090d16]">
+      
+      <!-- SAĞ ÜST: Canlı Commit & Dal Ağacı Görselleştirici -->
+      <div class="h-[46%] border-b border-slate-800 flex flex-col bg-slate-950/80 relative">
+        <div class="h-9 px-4 border-b border-slate-800/80 flex items-center justify-between text-xs text-slate-400 bg-slate-900/60 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+            <span class="font-bold text-white uppercase tracking-wider text-[11px]">Canlı Git Commit & Dal Ağacı</span>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-3 text-[11px]">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> main</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> feature</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> bugfix</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> origin</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span> HEAD</span>
+          </div>
+        </div>
+
+        <div id="visualizer-container" class="flex-1 overflow-hidden relative">
+          <!-- SVG grafiği dinamik render edilir -->
+        </div>
+      </div>
+
+      <!-- SAĞ ALT: İnteraktif Git Terminali -->
+      <div id="terminal-container" class="flex-1 flex flex-col bg-[#070a10] cursor-text overflow-hidden">
+        
+        <div class="h-8 px-4 border-b border-slate-800/80 bg-slate-900/70 flex items-center justify-between text-xs text-slate-400 shrink-0">
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+            </div>
+            <span class="font-mono text-[11px] text-slate-300 ml-2">bash ~ cisco-devnet-terminal</span>
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono">Tab: Tamamla | ↑ / ↓ : Geçmiş | 'help' komut listesi</span>
+        </div>
+
+        <div id="terminal-output" class="flex-1 p-4 overflow-y-auto space-y-1 font-mono text-xs scrollbar-thin select-text">
+          <div class="text-slate-500">3.3. Version Control Systems Terminaline Hoş Geldiniz!</div>
+          <div class="text-slate-500">Müfredattaki tüm komutlar desteklenmektedir: <code class="text-emerald-400">config, init, clone, status, add, rm, commit, branch, checkout, switch, merge, diff, log, push, pull</code></div>
+        </div>
+
+        <div class="p-3 bg-slate-950 border-t border-slate-800/80 flex items-center gap-2 font-mono text-xs">
+          <div id="terminal-prompt" class="shrink-0 text-cyan-400 font-bold select-none">
+            developer@github:~/proje (main)$
+          </div>
+          <input 
+            type="text" 
+            id="terminal-input" 
+            class="flex-1 bg-transparent text-white outline-none border-none p-0 font-mono text-xs" 
+            autocomplete="off" 
+            spellcheck="false" 
+            placeholder="git komutunu buraya yazın ve Enter'a basın..." 
+            autofocus
+          />
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- TEBRİKLER & SEVİYE TAMAMLANDI MODALI -->
+  <div id="level-complete-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative">
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-3xl">
+        🎉
+      </div>
+      <h3 id="complete-level-title" class="text-xl font-bold text-white mb-2">Tebrikler! Seviye Tamamlandı!</h3>
+      <p id="complete-level-desc" class="text-xs text-slate-300 leading-relaxed mb-6">
+        Bu senaryodaki tüm Git adımlarını başarıyla tamamladınız.
+      </p>
+
+      <div class="flex items-center gap-3">
+        <button id="btn-replay-level" class="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all">
+          Tekrar Dene
+        </button>
+        <button id="btn-next-level" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/30">
+          Sonraki Seviye →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BİLGİ & İPUCU & ÇÖZÜM MODALI -->
+  <div id="info-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 id="info-modal-title" class="text-base font-bold text-white">Bilgi</h3>
+        <button id="close-info-modal" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+      <div id="info-modal-content" class="max-h-[60vh] overflow-y-auto scrollbar-thin">
+      </div>
+    </div>
+  </div>
+
+  <!-- GİT KOPYA KAĞIDI (CHEAT SHEET) MODALI -->
+  <div id="cheatsheet-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">⚡</span>
+          <h3 class="text-base font-bold text-white">3.3. Version Control Systems Komut Sözlüğü</h3>
+        </div>
+        <button id="close-cheatsheet" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-2 space-y-3.5 scrollbar-thin text-xs mt-3">
+        
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-emerald-400 mb-2 uppercase text-[11px] tracking-wider">3.3.6 & 3.3.7 Temel & Dosya Komutları</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-300 font-mono">
+            <div><span class="text-emerald-300">git config --global user.name</span>: Kullanıcı adı</div>
+            <div><span class="text-emerald-300">git init</span>: Depo başlatır</div>
+            <div><span class="text-emerald-300">git clone &lt;url&gt;</span>: Depoyu klonlar</div>
+            <div><span class="text-emerald-300">git status</span>: Durum raporu</div>
+            <div><span class="text-emerald-300">git add .</span>: Dosyaları sahneler</div>
+            <div><span class="text-emerald-300">git rm &lt;dosya&gt;</span>: Dosyayı kaldırır</div>
+            <div><span class="text-emerald-300">git rm --cached</span>: Takipten çıkarır</div>
+            <div><span class="text-emerald-300">git commit -m "..."</span>: Kalıcı kayıt</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-purple-400 mb-2 uppercase text-[11px] tracking-wider">3.3.4 & 3.3.9 Dallanma (Branching Features)</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-300 font-mono">
+            <div><span class="text-purple-300">git branch</span>: Dalları listeler</div>
+            <div><span class="text-purple-300">git checkout -b &lt;dal&gt;</span>: Dal açıp geçer</div>
+            <div><span class="text-purple-300">git switch &lt;dal&gt;</span>: Dala geçer</div>
+            <div><span class="text-purple-300">git merge &lt;dal&gt;</span>: Birleştirir</div>
+            <div><span class="text-purple-300">git branch -d &lt;dal&gt;</span>: Dalı siler</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-pink-400 mb-2 uppercase text-[11px] tracking-wider">3.3.10 .diff & Tarihçe</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-300 font-mono">
+            <div><span class="text-pink-300">git diff</span>: Çalışma alanı farkları</div>
+            <div><span class="text-pink-300">git diff --staged</span>: Sahne farkları</div>
+            <div><span class="text-pink-300">git log --oneline</span>: Temiz geçmiş</div>
+            <div><span class="text-pink-300">git reset --soft HEAD~1</span>: Son commit geri al</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-sky-400 mb-2 uppercase text-[11px] tracking-wider">3.3.3 & 3.3.8 Uzak Depolar (GitHub & Remote)</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-300 font-mono">
+            <div><span class="text-sky-300">git remote add origin &lt;u&gt;</span>: Uzak depo bağla</div>
+            <div><span class="text-sky-300">git push -u origin &lt;dal&gt;</span>: Buluta gönder</div>
+            <div><span class="text-sky-300">git fetch</span>: Referansları güncelle</div>
+            <div><span class="text-sky-300">git pull</span>: Değişiklikleri çek ve birleştir</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="topics.js"></script>
+  <script src="challenges.js"></script>
+  <script src="git-engine.js"></script>
+  <script src="visualizer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
