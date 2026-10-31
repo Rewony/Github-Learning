@@ -3,9 +3,10 @@ class App {
   constructor() {
     this.engine = new GitEngine();
     this.visualizer = new GitVisualizer('visualizer-container');
-    this.currentMode = 'practice'; // 'learn' | 'practice' | 'sandbox'
+    this.currentMode = 'practice'; // 'learn' | 'guide' | 'practice' | 'sandbox'
     this.currentChallengeIndex = 0;
     this.currentTopicIndex = 0;
+    this.currentGuideIndex = 0;
     this.historyIndex = -1;
     this.completedChallenges = new Set(this.loadProgress());
 
@@ -14,6 +15,8 @@ class App {
     this.initLevel(0);
     this.renderTopicsMenu();
     this.renderTopicsContent(0);
+    this.renderGuideMenu();
+    this.renderGuideContent(0);
     this.updateProgressUI();
   }
 
@@ -93,6 +96,7 @@ class App {
 
     document.getElementById('tab-practice').addEventListener('click', () => this.switchMode('practice'));
     document.getElementById('tab-learn').addEventListener('click', () => this.switchMode('learn'));
+    document.getElementById('tab-guide').addEventListener('click', () => this.switchMode('guide'));
     document.getElementById('tab-sandbox').addEventListener('click', () => this.switchMode('sandbox'));
 
     document.getElementById('btn-cheatsheet').addEventListener('click', () => {
@@ -185,27 +189,33 @@ class App {
     this.currentMode = mode;
     const tabPractice = document.getElementById('tab-practice');
     const tabLearn = document.getElementById('tab-learn');
+    const tabGuide = document.getElementById('tab-guide');
     const tabSandbox = document.getElementById('tab-sandbox');
 
     const panelPractice = document.getElementById('panel-practice');
     const panelLearn = document.getElementById('panel-learn');
+    const panelGuide = document.getElementById('panel-guide');
 
-    [tabPractice, tabLearn, tabSandbox].forEach(btn => {
-      btn.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white";
+    [tabPractice, tabLearn, tabGuide, tabSandbox].forEach(btn => {
+      if (btn) btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white";
     });
 
+    panelPractice.classList.add('hidden');
+    panelLearn.classList.add('hidden');
+    if (panelGuide) panelGuide.classList.add('hidden');
+
     if (mode === 'practice') {
-      tabPractice.className = "px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+      tabPractice.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
       panelPractice.classList.remove('hidden');
-      panelLearn.classList.add('hidden');
     } else if (mode === 'learn') {
-      tabLearn.className = "px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
-      panelPractice.classList.add('hidden');
+      tabLearn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
       panelLearn.classList.remove('hidden');
+    } else if (mode === 'guide') {
+      if (tabGuide) tabGuide.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
+      if (panelGuide) panelGuide.classList.remove('hidden');
     } else if (mode === 'sandbox') {
-      tabSandbox.className = "px-4 py-2 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30";
+      tabSandbox.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30";
       panelPractice.classList.remove('hidden');
-      panelLearn.classList.add('hidden');
       this.startSandboxMode();
     }
   }
@@ -526,6 +536,57 @@ class App {
         }
       });
     }
+  }
+
+  renderGuideMenu() {
+    const list = document.getElementById('guide-menu-list');
+    if (!list || typeof GIT_GUIDE_CHAPTERS === 'undefined') return;
+    list.innerHTML = '';
+    GIT_GUIDE_CHAPTERS.forEach((ch, idx) => {
+      const isCur = idx === this.currentGuideIndex;
+      const btn = document.createElement('button');
+      btn.className = `w-full text-left p-2.5 rounded-xl border transition-all text-xs flex items-center justify-between ${
+        isCur 
+          ? 'bg-indigo-500/10 border-indigo-500/40 text-indigo-300 font-bold' 
+          : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+      }`;
+
+      btn.innerHTML = `
+        <span class="truncate max-w-[190px]">${ch.title}</span>
+        <span class="text-[9.5px] bg-slate-800 text-slate-400 px-1 py-0.5 rounded font-mono">Bölüm ${idx + 1}</span>
+      `;
+
+      btn.addEventListener('click', () => {
+        this.currentGuideIndex = idx;
+        this.renderGuideMenu();
+        this.renderGuideContent(idx);
+      });
+
+      list.appendChild(btn);
+    });
+  }
+
+  renderGuideContent(idx) {
+    const container = document.getElementById('guide-detail-area');
+    if (!container || typeof GIT_GUIDE_CHAPTERS === 'undefined') return;
+    const ch = GIT_GUIDE_CHAPTERS[idx];
+    if (!ch) return;
+
+    container.innerHTML = `
+      <div class="mb-4 pb-4 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-950/40 px-2.5 py-1 rounded-md border border-indigo-500/30">
+            Kapsamlı Rehber • Bölüm ${idx + 1}
+          </span>
+          <h2 class="text-xl font-bold text-white mt-2">${ch.title}</h2>
+          <p class="text-xs text-slate-400 mt-1">${ch.summary}</p>
+        </div>
+      </div>
+
+      <div class="guide-body">
+        ${ch.html}
+      </div>
+    `;
   }
 
   launchConfetti() {

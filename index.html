@@ -50,16 +50,20 @@
     </div>
 
     <!-- Mod Sekmeleri -->
-    <div class="flex items-center bg-slate-950/70 p-1 rounded-xl border border-slate-800">
-      <button id="tab-practice" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5">
+    <div class="flex items-center bg-slate-950/70 p-1 rounded-xl border border-slate-800 gap-1">
+      <button id="tab-practice" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5">
         <span>🎮</span>
-        <span>Pratik & Senaryolar (11 Seviye)</span>
+        <span>Pratik & Senaryolar</span>
       </button>
-      <button id="tab-learn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+      <button id="tab-learn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
         <span>📖</span>
-        <span>3.3 Konu Anlatımı</span>
+        <span>3.3 Müfredat</span>
       </button>
-      <button id="tab-sandbox" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+      <button id="tab-guide" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+        <span>📘</span>
+        <span>Detaylı Rehber (12 Bölüm)</span>
+      </button>
+      <button id="tab-sandbox" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
         <span>🧪</span>
         <span>Serbest Mod</span>
       </button>
@@ -149,6 +153,16 @@
         </div>
         <div class="flex-1 p-5 overflow-y-auto scrollbar-thin bg-slate-900/40" id="topic-detail-area">
           <!-- Dinamik konu HTML içeriği -->
+        </div>
+      </div>
+
+      <!-- DETAYLI REHBER PANELİ -->
+      <div id="panel-guide" class="hidden flex-1 flex overflow-hidden">
+        <div class="w-5/12 border-r border-slate-800 p-2.5 overflow-y-auto space-y-1.5 scrollbar-thin bg-slate-950/40" id="guide-menu-list">
+          <!-- 12 Bölümlük rehber menüsü -->
+        </div>
+        <div class="flex-1 p-5 overflow-y-auto scrollbar-thin bg-slate-900/40" id="guide-detail-area">
+          <!-- Dinamik rehber bölüm içeriği -->
         </div>
       </div>
 
@@ -317,6 +331,7 @@
   </div>
 
   <script src="topics.js"></script>
+  <script src="guide.js"></script>
   <script src="challenges.js"></script>
   <script src="git-engine.js"></script>
   <script src="visualizer.js"></script>
