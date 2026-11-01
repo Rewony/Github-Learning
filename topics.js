@@ -1033,5 +1033,103 @@ const port = 8080; <span class="text-slate-500">// Arkadaşının GitHub'dan gel
       </div>
     `,
     relatedChallengeId: "c14"
+  },
+  {
+    id: "3-3-13",
+    curriculumCode: "3.3.13",
+    title: "3.3.13 Upstream Mantığı & 'No Upstream Branch' Hatası",
+    badge: "Kritik Çözüm",
+    icon: "alert-circle",
+    summary: "fatal: The current branch has no upstream branch hatası, -u / --set-upstream parametresi ve push.autoSetupRemote.",
+    content: `
+      <div class="space-y-6 text-slate-200 text-xs leading-relaxed">
+        <!-- Giriş -->
+        <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800">
+          <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-rose-400 inline-block shadow-sm shadow-rose-400/50"></span>
+            "fatal: The current branch test has no upstream branch" Hatası
+          </h3>
+          <p class="text-slate-300">
+            Git kullanırken yeni bir dal (branch) açıp doğrudan <code class="text-rose-300 font-mono">git push</code> yazdığınızda karşınıza çıkan en yaygın ve kafa karıştırıcı hatadır. Bu ders, bu hatanın arkasındaki mantığı ve kalıcı çözümünü öğretir.
+          </p>
+        </div>
+
+        <!-- Hatayı Görelim -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-rose-500/40">
+          <h4 class="font-bold text-rose-300 text-xs mb-2">Terminalde Karşılaşılan Tam Hata Mesajı:</h4>
+          <pre class="p-3 bg-slate-900 rounded-lg border border-slate-800 font-mono text-[11px] leading-relaxed text-slate-300">
+<span class="text-rose-400 font-bold">fatal: The current branch test has no upstream branch.</span>
+<span class="text-slate-400">To push the current branch and set the remote as upstream, use</span>
+
+    <span class="text-cyan-400 font-bold">git push --set-upstream origin test</span>
+
+<span class="text-slate-500">To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.</span>
+          </pre>
+        </div>
+
+        <!-- Neden Oldu? -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-amber-400 text-xs mb-2">Bu Hata Neden Çıkar? (Zihinde Canlandırma)</h4>
+          <p class="text-slate-300 mb-2">
+            Bilgisayarınızda <code class="text-amber-300 font-mono">git checkout -b test</code> dediğinizde, bu dal <strong>yalnızca sizin yerel diskinizde</strong> oluşturulur. GitHub'ın bu daldan henüz haberi yoktur!
+          </p>
+          <p class="text-slate-300 mb-3">
+            Siz doğrudan <code class="text-rose-300 font-mono">git push</code> dediğinizde Git sorar: <em>"Ben bu 'test' dalını GitHub'daki hangi uzak dala göndereyim? Hangi uzak dala bağlayayım?"</em>
+          </p>
+          <div class="p-2.5 bg-slate-900 rounded border border-amber-500/30 text-amber-200 text-[11px]">
+            Git'te yerel bir dalın GitHub'daki karşılığına <strong>Upstream (Akıntı Yukarısı / Hedef Uzak Dal)</strong> denir. Upstream tanımlı olmadığı için Git işlemi durdurur.
+          </div>
+        </div>
+
+        <!-- İki Çözüm Yolu -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div class="p-4 bg-slate-950 rounded-xl border border-emerald-500/40 bg-emerald-950/10">
+            <h5 class="text-xs font-bold text-emerald-400 mb-2">Çözüm 1: Upstream Bağlantısı ile Gönderme (-u)</h5>
+            <p class="text-slate-400 text-[11px] mb-2">İlk push sırasında <code class="text-emerald-300 font-mono">-u</code> parametresi verilir:</p>
+            <div class="p-2.5 bg-slate-900 rounded font-mono text-[11px] text-emerald-300">
+              git push -u origin test
+            </div>
+            <p class="text-[10.5px] text-slate-400 mt-2">
+              <code class="text-emerald-300 font-mono">-u</code> (--set-upstream), Git'e: <em>"GitHub'da 'test' adında dal aç, yerel dalımı ona bağla ve bunu hatırla!"</em> der. Sonraki seferlerde sadece <code class="text-white font-mono">git push</code> yazmanız yeterli olur!
+            </p>
+          </div>
+
+          <div class="p-4 bg-slate-950 rounded-xl border border-cyan-500/40 bg-cyan-950/10">
+            <h5 class="text-xs font-bold text-cyan-400 mb-2">Çözüm 2: Ömür Boyu Kurtulma Ayarı (Modern Git)</h5>
+            <p class="text-slate-400 text-[11px] mb-2">Terminalinize bir kere şu komutu yazın:</p>
+            <div class="p-2.5 bg-slate-900 rounded font-mono text-[11px] text-cyan-300">
+              git config --global push.autoSetupRemote true
+            </div>
+            <p class="text-[10.5px] text-slate-400 mt-2">
+              Bu ayardan sonra açtığınız her yeni dalda <code class="text-white font-mono">-u</code> yazmayı unutsanız bile Git arka planda otomatik olarak upstream bağlantısını kurar ve bu hata bir daha <strong>asla çıkmaz</strong>! 🚀
+            </p>
+          </div>
+        </div>
+
+        <!-- Neden URL Değil origin? -->
+        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-white text-xs mb-1.5">İpucu: Neden Her Seferinde Uzun URL Yazmamalısınız?</h4>
+          <p class="text-slate-300 text-[11px] mb-2">
+            Komut satırında <code class="text-slate-400 font-mono">git push https://github.com/Rewony/kevgir test</code> yazmak yerine bir kereye mahsus deponuza takma ad tanımlamalısınız:
+          </p>
+          <div class="p-2.5 bg-slate-950 rounded font-mono text-[11px] text-slate-300 space-y-1">
+            <div><span class="text-purple-400">git remote add origin https://github.com/Rewony/kevgir.git</span></div>
+            <div><span class="text-emerald-400">git push -u origin test</span></div>
+          </div>
+        </div>
+
+        <!-- Pratik Butonu -->
+        <div class="p-4 bg-rose-950/20 border border-rose-500/30 rounded-xl flex items-center justify-between">
+          <div>
+            <h5 class="text-white font-bold text-xs">Bu Hatanın Canlı Simülasyonunu Deneyin</h5>
+            <p class="text-[11px] text-slate-400">Seviye 17 senaryosunda bu hatayı bizzat üretip çözün.</p>
+          </div>
+          <button id="btn-go-to-upstream-challenge" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-rose-600/30 shrink-0">
+            Seviye 17 Pratiğine Git →
+          </button>
+        </div>
+      </div>
+    `,
+    relatedChallengeId: "c17"
   }
 ];

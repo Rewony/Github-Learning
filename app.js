@@ -608,6 +608,17 @@ class App {
         }
       });
     }
+
+    const upstreamBtn = document.getElementById('btn-go-to-upstream-challenge');
+    if (upstreamBtn) {
+      upstreamBtn.addEventListener('click', () => {
+        const targetIdx = GIT_CHALLENGES.findIndex(c => c.id === 'c17');
+        if (targetIdx !== -1) {
+          this.switchMode('practice');
+          this.initLevel(targetIdx);
+        }
+      });
+    }
   }
 
   renderGuideMenu() {

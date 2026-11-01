@@ -299,8 +299,12 @@ const API = "https://test.com";
             <p class="text-slate-400 font-sans text-[10.5px] mt-0.5">GitHub üzerindeki deponuzu 'origin' takma adıyla yerel projenize bağlar.</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
-            <span class="text-sky-400 font-bold">git push -u origin main</span>
-            <p class="text-slate-400 font-sans text-[10.5px] mt-0.5">Dalı GitHub'a yükler ve upstream eşlemesini kurar (sonraki seferlerde sadece 'git push' yazmanız yeterli olur).</p>
+            <span class="text-sky-400 font-bold">git push -u origin main / git push -u origin feature-test</span>
+            <p class="text-slate-400 font-sans text-[10.5px] mt-0.5">Dalı GitHub'a yükler ve <strong>upstream (hedef uzak dal) eşlemesini</strong> kurar. <code class="text-cyan-300 font-mono">-u</code> parametresi sayesinde sonraki seferlerde yalnızca 'git push' yazmanız yeterli olur.</p>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <span class="text-amber-400 font-bold">git config --global push.autoSetupRemote true</span>
+            <p class="text-slate-400 font-sans text-[10.5px] mt-0.5">⚡ Hayat kurtaran ayar: Yeni açtığınız dallarda '-u' yazmayı unutsanız bile doğrudan 'git push' dediğinizde Git'in otomatik upstream kurmasını sağlar!</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
             <span class="text-sky-400 font-bold">git fetch origin vs. git pull origin main</span>
@@ -380,6 +384,15 @@ const API = "https://test.com";
           <strong class="text-rose-400 block mb-0.5">5. GitHub'a yanlışlıkla .env / API anahtarı pushladım:</strong>
           <div class="text-[11px] text-slate-400 mt-1">
             Önce anahtarı derhal iptal edin (revoke) ➔ <code class="text-cyan-300 font-mono">git rm --cached .env</code> ➔ <code class="text-cyan-300 font-mono">git commit -m "security: dosya takipten cikarildi"</code> ➔ <code class="text-cyan-300 font-mono">git push</code>
+          </div>
+        </div>
+
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-amber-500/40 bg-amber-950/20">
+          <strong class="text-amber-300 block mb-0.5">6. "fatal: The current branch test has no upstream branch" Hatası:</strong>
+          <div class="text-[11px] text-slate-300 mt-1 space-y-1">
+            <p><strong>Neden oldu?</strong> Bilgisayarında yeni bir dal açtın ama GitHub'ın bu daldan henüz haberi yok. Git bu dalı nereye göndereceğini bilemedi!</p>
+            <p><strong>Çözüm 1:</strong> <code class="text-emerald-400 font-mono font-bold">git push -u origin test</code> (veya <code class="font-mono text-cyan-300">git push --set-upstream origin test</code>)</p>
+            <p><strong>Çözüm 2 (Kalıcı Sihir):</strong> Bir daha bu hatayı asla görmemek için: <code class="text-amber-300 font-mono font-bold">git config --global push.autoSetupRemote true</code></p>
           </div>
         </div>
       </div>
