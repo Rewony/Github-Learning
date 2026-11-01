@@ -380,10 +380,12 @@ git remote add origin https://github.com/kullanici/proje.git
 git remote set-url origin git@github.com:kullanici/yeni-proje.git
 ```
 
-### 9.2. Senkronizasyon (Push, Fetch, Pull)
+### 9.2. Senkronizasyon (Push, Fetch, Pull) & Upstream Mantığı
 ```bash
-# İlk push işleminde upstream bağlantısı kurma
+# İlk push işleminde upstream bağlantısı kurma (-u / --set-upstream)
 git push -u origin main
+# veya yeni bir dal için:
+git push -u origin test
 
 # Sonraki seferlerde sadece:
 git push
@@ -393,6 +395,20 @@ git fetch origin
 
 # Uzaktaki commit'leri indir ve mevcut dala anında birleştir (fetch + merge)
 git pull origin main
+```
+
+#### ⚠️ "fatal: The current branch has no upstream branch" Hatası Neden Çıkar?
+Yerel bilgisayarınızda `git checkout -b test` diyerek yeni bir dal açtığınızda bu dal **yalnızca sizin bilgisayarınızda** vardır. GitHub'ın bu daldan henüz haberi yoktur!  
+Eğer sadece `git push` (veya `git push https://...`) yazarsanız Git sorar: *"Bu dalı GitHub'daki hangi uzak dala bağlayayım (upstream)?"*  
+**Çözümler:**
+```bash
+# 1. Klasik Çözüm: Upstream bağlantısını kurarak gönder (-u parametresi)
+git push -u origin test
+# (veya açık hali: git push --set-upstream origin test)
+
+# 2. Kalıcı & Modern Çözüm (Bunu bir kere yazın, bu hatayı bir daha asla almayın!):
+git config --global push.autoSetupRemote true
+# Bu ayar sayesinde yeni açtığınız her dalda doğrudan 'git push' yazsanız bile Git arka planda otomatik upstream kurar!
 ```
 
 ### 9.3. Kurumsal Pull Request (PR) & Feature Branch Akışı

@@ -650,5 +650,50 @@ const GIT_CHALLENGES = [
       "2. git push origin main çalıştır. Artık yerel kodun uzaktakini kapsadığı için push kabul edilecek!"
     ],
     solution: "git pull origin main\ngit push origin main"
+  },
+  {
+    id: "c17",
+    levelNumber: 17,
+    curriculumCode: "Gerçek Hayat Hatası",
+    title: "fatal: The current branch has no upstream branch",
+    badge: "Upstream Hatası",
+    badgeColor: "rose",
+    story: "Yerel bilgisayarında 'test' adında yeni bir dal açtın ve içine bir commit kaydettin. Şimdi doğrudan 'git push' yazarak göndermeyi dene. Git hata verecek: 'fatal: The current branch test has no upstream branch.' Çünkü GitHub bu dalı ilk kez görüyor ve nereye eşleyeceğini bilmiyor! Bu kritik hatayı çözmek için upstream bağlantısını kur.",
+    setup: (engine) => {
+      engine.reset();
+      engine.isInitialized = true;
+      const c1 = engine.generateHash();
+      const c2 = engine.generateHash();
+
+      engine.commits[c1] = { id: c1, parents: [], msg: "Initial commit", timestamp: "14:00", branch: "main", files: ['app.py'] };
+      engine.commits[c2] = { id: c2, parents: [c1], msg: "Test dalı geliştirmesi", timestamp: "14:15", branch: "test", files: ['test.py'] };
+
+      engine.branches['main'] = c1;
+      engine.branches['test'] = c2;
+      engine.HEAD = { type: 'branch', name: 'test' };
+      engine.remotes['origin'] = {
+        url: 'https://github.com/Rewony/kevgir.git',
+        branches: { main: c1 } // origin'de henüz 'test' dalı yok!
+      };
+      engine.config.autoSetupRemote = false;
+    },
+    goals: [
+      {
+        id: "g17_1",
+        label: "Önce doğrudan 'git push' yazıp 'no upstream branch' hatasını gör",
+        check: (engine, cmd) => cmd && cmd.trim() === 'git push'
+      },
+      {
+        id: "g17_2",
+        label: "Upstream eşlemesini kurarak push yap: git push -u origin test",
+        check: (engine) => engine.remotes['origin'] && engine.remotes['origin'].branches['test'] !== undefined
+      }
+    ],
+    hints: [
+      "1. 'git push' yazıp Enter'a bas ve hatayı gör.",
+      "2. Hatayı çözmek için: 'git push -u origin test' (veya 'git push --set-upstream origin test') çalıştır.",
+      "💡 Kalıcı Çözüm İpucu: 'git config --global push.autoSetupRemote true' yazarsanız, Git bir daha bu hatayı asla vermez ve yeni dalları otomatik bağlar!"
+    ],
+    solution: "git push\ngit push -u origin test"
   }
 ];

@@ -169,6 +169,10 @@ class GitEngine {
         return { output: `<span class="text-emerald-400">Kullanıcı e-postası yapılandırıldı: ${this.config.userEmail}</span>`, type: 'success' };
       }
     }
+    if (rawStr.includes('push.autosetupremote')) {
+      this.config.autoSetupRemote = true;
+      return { output: `<span class="text-emerald-400">Ayıar kaydedildi: push.autoSetupRemote=true</span>\n<span class="text-cyan-300 text-xs">Artık yeni dallarda -u (--set-upstream) vermeden doğrudan 'git push' yapabilirsiniz!</span>`, type: 'success' };
+    }
     if (rawStr.includes('--list') || rawStr.includes('-l')) {
       return {
         output: `<span class="text-slate-300 font-mono">user.name=${this.config.userName}\nuser.email=${this.config.userEmail}\ncore.repositoryformatversion=0\ncore.filemode=false\ncore.bare=false</span>`,
@@ -763,13 +767,21 @@ index 83a21b..f42c19 100644
     const curBranch = this.getCurrentBranch();
     let remoteName = 'origin';
     let targetBranch = curBranch;
+    const hasSetUpstream = args && (args.includes('-u') || args.includes('--set-upstream'));
 
-    const cleanArgs = args ? args.filter(a => a !== '-u') : [];
-    if (cleanArgs.length >= 1) remoteName = cleanArgs[0];
+    const cleanArgs = args ? args.filter(a => a !== '-u' && a !== '--set-upstream') : [];
+    if (cleanArgs.length >= 1 && !cleanArgs[0].startsWith('http')) remoteName = cleanArgs[0];
     if (cleanArgs.length >= 2) targetBranch = cleanArgs[1];
 
     if (!this.remotes[remoteName]) {
-      return { output: `<span class="text-rose-400">fatal: '${remoteName}' adında bir uzak depo yapılandırılmamış.\nİpucu: Önce 'git remote add origin https://github.com/...' komutunu çalıştırın.</span>`, type: 'error' };
+      // Eğer doğrudan URL yazıldıysa otomatik origin olarak kaydet
+      if (cleanArgs.length >= 1 && cleanArgs[0].startsWith('http')) {
+        this.remotes['origin'] = { url: cleanArgs[0], branches: {} };
+        remoteName = 'origin';
+        if (cleanArgs.length >= 2) targetBranch = cleanArgs[1];
+      } else {
+        return { output: `<span class="text-rose-400">fatal: '${remoteName}' adında bir uzak depo yapılandırılmamış.\nİpucu: Önce 'git remote add origin https://github.com/...' komutunu çalıştırın.</span>`, type: 'error' };
+      }
     }
 
     const curCommitId = this.branches[targetBranch];
@@ -777,11 +789,22 @@ index 83a21b..f42c19 100644
       return { output: `<span class="text-rose-400">Hata: '${targetBranch}' dalında henüz push edilecek bir commit yok.</span>`, type: 'error' };
     }
 
+    // Upstream kontrolü: Eğer bu dal uzak depoda henüz eşlenmemişse ve -u verilmemişse
+    const remoteBranches = this.remotes[remoteName].branches || {};
+    const isTracked = remoteBranches[targetBranch] !== undefined;
+
+    if (!isTracked && !hasSetUpstream && targetBranch !== 'main' && !this.config.autoSetupRemote) {
+      return {
+        output: `<span class="text-rose-400 font-bold">fatal: The current branch ${targetBranch} has no upstream branch.</span>\n<span class="text-slate-300">To push the current branch and set the remote as upstream, use</span>\n\n    <code class="text-cyan-400 font-bold font-mono">git push --set-upstream ${remoteName} ${targetBranch}</code>\n    <span class="text-slate-400 text-xs">(veya pratik kısayol: <code class="text-emerald-400 font-mono">git push -u ${remoteName} ${targetBranch}</code>)</span>\n\n<span class="text-slate-400 text-xs">To have this happen automatically for branches without a tracking upstream, see:</span>\n    <code class="text-amber-400 font-mono">git config --global push.autoSetupRemote true</code>`,
+        type: 'error'
+      };
+    }
+
     this.remotes[remoteName].branches[targetBranch] = curCommitId;
     this.notify();
 
     return {
-      output: `<span class="text-emerald-400">Yükleniyor -> ${this.remotes[remoteName].url}\n* [yeni dal]        ${targetBranch} -> ${targetBranch}\n'${targetBranch}' dalı başarıyla '${remoteName}' uzak deposuna gönderildi!</span>`,
+      output: `<span class="text-emerald-400">Yükleniyor -> ${this.remotes[remoteName].url}\n* [yeni dal]        ${targetBranch} -> ${targetBranch}\nBranch '${targetBranch}' set up to track remote branch '${targetBranch}' from '${remoteName}'.\n'${targetBranch}' dalı başarıyla '${remoteName}' uzak deposuna gönderildi ve upstream eşlemesi kuruldu!</span>`,
       type: 'success'
     };
   }
