@@ -910,5 +910,128 @@ port = 9000
       </div>
     `,
     relatedChallengeId: "c11"
+  },
+  {
+    id: "3-3-12",
+    curriculumCode: "3.3.12",
+    title: "3.3.12 Masterclass: Kodları Locale Çekme & Merge Derinliği",
+    badge: "Masterclass",
+    icon: "git-pull-request",
+    summary: "Neden push kolay ama pull ve merge zordur? Fetch vs Pull farkı, Remote Tracking ve Conflict çözümü.",
+    content: `
+      <div class="space-y-6 text-slate-200 text-xs leading-relaxed">
+        <!-- Giriş -->
+        <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800">
+          <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block shadow-sm shadow-cyan-400/50"></span>
+            Neden "Push" Kolaydır da "Pull & Merge" Kafa Karıştırır?
+          </h3>
+          <p class="text-slate-300">
+            Tek başınıza çalışırken kod yazıp <code class="text-emerald-300 font-mono">git push</code> yapmak basittir; çünkü tek yönlüdür. Ancak gerçek bir şirkete veya açık kaynak bir ekibe girdiğinizde asıl iş; <strong>başkalarının yazdığı kodları kendi bilgisayarınıza çekmek (pull)</strong> ve <strong>kendi kodunuzla çakışmadan harmanlamaktır (merge)</strong>.
+          </p>
+        </div>
+
+        <!-- Bilgisayarınızda Neden İki Tane Main Vardır? -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-sky-400 text-xs mb-2">1. Zihinde Canlandırma: Bilgisayarınızda Neden İKİ Tane 'main' Vardır?</h4>
+          <p class="text-slate-300 mb-3">
+            Pek çok geliştiricinin kafasını karıştıran ilk şey şudur: Bilgisayarınızda sadece bir <code class="text-emerald-400 font-mono">main</code> yoktur! İki tane vardır:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+            <div class="p-3 bg-slate-900 rounded-lg border border-emerald-500/30">
+              <strong class="text-emerald-400 block mb-1">1. Yerel main (Local main):</strong>
+              <p class="text-slate-400">Sizin kod yazdığınız, kendi commit'lerinizi attığınız yerel dalınız.</p>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-lg border border-sky-500/30">
+              <strong class="text-sky-400 block mb-1">2. Uzak Referans (origin/main):</strong>
+              <p class="text-slate-400">GitHub'daki en son durumun bilgisayarınızdaki aynası (fotoğrafı). Siz kod yazarken arkadaşınız GitHub'a bir şey atarsa, GitHub'daki main ilerler ama sizin haberiniz olmaz!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fetch vs Pull Farkı -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-amber-400 text-xs mb-2">2. git fetch vs git pull: Ne Zaman Hangisi?</h4>
+          <div class="space-y-3 text-[11px]">
+            <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+              <div class="flex items-center gap-2 mb-1">
+                <code class="text-amber-400 font-bold font-mono">git fetch origin</code>
+                <span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">Güvenli İnceleme</span>
+              </div>
+              <p class="text-slate-300">
+                GitHub'daki yeni commit'leri indirir ve yerelinizdeki <code class="text-sky-300 font-mono">origin/main</code> etiketini ileri taşır. <strong>Çalışma klasörünüzdeki dosyalara ASLA dokunmaz!</strong> Böylece ne değiştiğini güvenle inceleyebilirsiniz.
+              </p>
+            </div>
+
+            <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+              <div class="flex items-center gap-2 mb-1">
+                <code class="text-cyan-400 font-bold font-mono">git pull origin main</code>
+                <span class="text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded">Fetch + Merge</span>
+              </div>
+              <p class="text-slate-300">
+                Önce arka planda <code class="text-cyan-300 font-mono">git fetch</code> yapar, hemen ardından o anki dalınızla birleştirmek için <code class="text-cyan-300 font-mono">git merge origin/main</code> komutunu çalıştırır. Eğer aynı satırları değiştirdiyseniz çakışma (conflict) çıkar!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uzaktaki Dalı Locale Çekme -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-purple-500/30">
+          <h4 class="font-bold text-purple-400 text-xs mb-2">3. Arkadaşımın GitHub'da Açtığı Dalı Bilgisayarıma Nasıl Çekerim?</h4>
+          <p class="text-slate-300 text-[11px] mb-2">
+            Arkadaşınız GitHub'da <code class="text-purple-300 font-mono">feature-odeme</code> diye bir dal açtı. Bilgisayarınızda <code class="text-slate-400 font-mono">git branch</code> yazarsanız bu dalı göremezsiniz. Adımlar:
+          </p>
+          <div class="p-3 bg-slate-900 rounded-lg font-mono text-[11px] space-y-1.5 text-slate-300">
+            <div><span class="text-slate-500"># 1. Uzaktaki yeni dalları bilgisayarına bildir:</span></div>
+            <div><span class="text-purple-400">git fetch origin</span></div>
+            <div><span class="text-slate-500"># 2. Doğrudan o dala geç (Git otomatik olarak origin/feature-odeme'den yerel dal üretir):</span></div>
+            <div><span class="text-emerald-400">git switch feature-odeme</span></div>
+          </div>
+        </div>
+
+        <!-- Merge Conflict Çözüm Anatomisi -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-rose-500/40">
+          <h4 class="font-bold text-rose-400 text-xs mb-2">4. Merge Conflict (Çakışma) Çıktığında Korkmalı mıyım?</h4>
+          <p class="text-slate-300 text-[11px] mb-2">
+            Kesinlikle hayır! Çakışma bir hata değil, <strong>Git'in sizin kodunuzu koruma yöntemidir</strong>. Git iki farklı insanın aynı satırı değiştirdiğini görünce sessizce birini silmek yerine kararı size bırakır:
+          </p>
+          
+          <pre class="p-3 bg-slate-900 rounded-lg border border-slate-800 font-mono text-[11px] leading-relaxed text-slate-300 mb-2">
+<span class="text-cyan-400 font-bold">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+const port = 3000; <span class="text-slate-500">// Senin bilgisayarındaki kod</span>
+<span class="text-slate-500 font-bold">=======</span>
+const port = 8080; <span class="text-slate-500">// Arkadaşının GitHub'dan gelen kodu</span>
+<span class="text-purple-400 font-bold">&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/main</span>
+          </pre>
+
+          <div class="text-[11px] text-slate-300 space-y-1">
+            <p><strong>Çözüm 3 Adımdır:</strong></p>
+            <p>1. Editörde dosyayı aç, istemediğin satırı ve <code class="text-rose-400">&lt;&lt;&lt;</code>, <code class="text-slate-400">===</code>, <code class="text-purple-400">&gt;&gt;&gt;</code> işaretlerini sil.</p>
+            <p>2. Dosyayı kaydet ve sahneye ekle: <code class="text-emerald-400 font-mono">git add app.js</code></p>
+            <p>3. Birleştirmeyi tamamla: <code class="text-emerald-400 font-mono">git commit -m "Merge conflict cozuldu"</code></p>
+          </div>
+        </div>
+
+        <!-- git merge --abort -->
+        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-amber-400 text-xs mb-1.5">⚡ Hayat Kurtaran: git merge --abort</h4>
+          <p class="text-slate-300 text-[11px]">
+            Birleştirme sırasında çok fazla dosya çakıştı veya yanlış dala merge yaptığınızı fark ettiniz:
+            <code class="text-amber-300 font-mono bg-slate-950 px-2 py-0.5 rounded">git merge --abort</code> yazarak tek bir harf dahi kaybetmeden merge öncesi temiz durumunuza dönebilirsiniz.
+          </p>
+        </div>
+
+        <div class="p-4 bg-cyan-950/20 border border-cyan-500/30 rounded-xl flex items-center justify-between">
+          <div>
+            <h5 class="text-white font-bold text-xs">Bu Konunun Canlı Pratiğini Yapın</h5>
+            <p class="text-[11px] text-slate-400">Seviye 12 - 16 arasındaki interaktif ekip senaryolarıyla çakışma çözmeyi deneyimleyin.</p>
+          </div>
+          <button id="btn-go-to-advanced-merge" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-cyan-600/30 shrink-0">
+            İleri Seviye Pratiğe Git →
+          </button>
+        </div>
+      </div>
+    `,
+    relatedChallengeId: "c14"
   }
 ];

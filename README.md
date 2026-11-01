@@ -37,6 +37,11 @@ Bu platform; Cisco DevNet **3.3. Version Control Systems** müfredatının **11 
 | **3.3.9** | Branching Features | ✅ Fast-Forward vs 3-Way Merge, Çakışma (Conflict) Çözümü | ✅ Canlı Dal Ağacında Birleştirme |
 | **3.3.10** | .diff Files | ✅ Unified Diff Biçimi Okuma (`+` / `-`), Patch Dosyaları | ✅ `git diff` ve `git diff --staged` |
 | **3.3.11** | Lab - Software Version Control with Git | ✅ Büyük Final Kapsamlı Laboratuvarı | ✅ A'dan Z'ye Uçtan Uca Capstone Lab |
+| **3.3.12 (İleri Düzey)** | **Ekip Çalışması: Fetch vs. Pull** | ✅ `origin/main` vs Yerel `main` Farkı, Güvenli İnceleme | ✅ Seviye 12: `git fetch` ➔ `git merge` |
+| **3.3.13 (İleri Düzey)** | **Uzak Dalı Locale Çekme (Tracking)** | ✅ Remote Tracking Branch Mimarisi | ✅ Seviye 13: `git switch <remoteBranch>` |
+| **3.3.14 (İleri Düzey)** | **Gerçek Merge Conflict & Çözücü** | ✅ `<<<<<<< HEAD` Anatomisi ve Satır Satır Temizleme | ✅ Seviye 14: Canlı Çakışma Çözücü Kartı |
+| **3.3.15 (İleri Düzey)** | **Panik Yok! Merge İptali** | ✅ Temiz Geri Dönüş Protokolü | ✅ Seviye 15: `git merge --abort` |
+| **3.3.16 (İleri Düzey)** | **Non-Fast-Forward Push Reddi** | ✅ `[rejected]` Hatasının Tam Çözüm Döngüsü | ✅ Seviye 16: Pull ➔ Resolve ➔ Push |
 
 ---
 

@@ -25,6 +25,8 @@ class GitEngine {
     this.commitCounter = 0;
     this.history = [];
     this.listeners = [];
+    this.conflictState = null; // Aktif merge conflict bilgisi
+    this.preMergeState = null; // merge --abort için yedek commit id
   }
 
   onChange(fn) {
@@ -478,6 +480,20 @@ class GitEngine {
       };
     }
 
+    // Uzak dal kontrolü (Remote tracking branch: örn feature-sepet -> origin/feature-sepet)
+    for (const [rName, rObj] of Object.entries(this.remotes)) {
+      if (rObj.branches && rObj.branches[target]) {
+        const remoteCommit = rObj.branches[target];
+        this.branches[target] = remoteCommit;
+        this.HEAD = { type: 'branch', name: target };
+        this.notify();
+        return {
+          output: `<span class="text-emerald-400">Dal '${target}', '${rName}/${target}' uzak dalını izleyecek şekilde yerelde oluşturuldu.</span>\n<span class="text-cyan-300 text-xs">Yeni '${target}' dalına geçildi.</span>`,
+          type: 'success'
+        };
+      }
+    }
+
     return {
       output: `<span class="text-rose-400">error: pathspec '${target}' eşleşen bir dal veya commit bulunamadı.</span>`,
       type: 'error'
@@ -501,6 +517,24 @@ class GitEngine {
       return { output: `<span class="text-rose-400">Birleştirilecek dal belirtilmedi. Örnek: git merge feature-login</span>`, type: 'error' };
     }
 
+    // git merge --abort
+    if (args[0] === '--abort') {
+      if (!this.conflictState && !this.preMergeState) {
+        return { output: `<span class="text-rose-400">fatal: İptal edilecek aktif bir merge işlemi bulunmuyor.</span>`, type: 'error' };
+      }
+      if (this.preMergeState) {
+        const curBranch = this.getCurrentBranch();
+        if (curBranch) this.branches[curBranch] = this.preMergeState;
+      }
+      this.conflictState = null;
+      this.preMergeState = null;
+      this.notify();
+      return {
+        output: `<span class="text-amber-400">Merge işlemi iptal edildi (abort). Çalışma alanı merge öncesi temiz durumuna geri döndürüldü.</span>`,
+        type: 'warning'
+      };
+    }
+
     const sourceBranch = args[0];
     const curBranch = this.getCurrentBranch();
 
@@ -512,7 +546,21 @@ class GitEngine {
       return { output: `<span class="text-amber-400">Zaten '${curBranch}' dalındasınız. Bir dal kendi kendine birleştirilemez.</span>`, type: 'warning' };
     }
 
-    const sourceCommitId = this.branches[sourceBranch];
+    // Remote dal adını da destekle (örn origin/main veya main)
+    let sourceCommitId = this.branches[sourceBranch];
+    if (sourceCommitId === undefined) {
+      // origin/xxx kontrolü
+      for (const [rName, rObj] of Object.entries(this.remotes)) {
+        if (sourceBranch.startsWith(rName + '/') && rObj.branches) {
+          const subBranch = sourceBranch.replace(rName + '/', '');
+          if (rObj.branches[subBranch]) {
+            sourceCommitId = rObj.branches[subBranch];
+            break;
+          }
+        }
+      }
+    }
+
     if (sourceCommitId === undefined) {
       return { output: `<span class="text-rose-400">merge: '${sourceBranch}' - böyle bir dal yok.</span>`, type: 'error' };
     }
@@ -527,6 +575,24 @@ class GitEngine {
       return { output: `<span class="text-emerald-400">Already up to date. (Dallar zaten senkronize)</span>`, type: 'info' };
     }
 
+    // Çakışma simülasyonu kontrolü (Eğer aktif conflict tetiklenmişse)
+    if (this.shouldTriggerConflict) {
+      this.preMergeState = curCommitId;
+      this.conflictState = {
+        file: 'app.js',
+        branchA: curBranch,
+        branchB: sourceBranch,
+        ourCode: 'const API_URL = "https://benim-yerel-test-api.com"; // Senin kodun',
+        theirCode: 'const API_URL = "https://ekip-arkadasi-canli-api.com"; // Ekip arkadaşının kodu',
+        resolved: false
+      };
+      this.notify();
+      return {
+        output: `<span class="text-amber-300 font-bold">Otomatik birleştirme başarısız oldu (Auto-merging app.js).</span>\n<span class="text-rose-400 font-bold">CONFLICT (content): Merge conflict in app.js</span>\n<span class="text-slate-300 text-xs">Otomatik birleştirme başarısız oldu; çakışmaları düzeltin ve ardından sonucu commit'leyin.</span>\n<span class="text-cyan-400 text-xs font-semibold">💡 İpucu: Yukarıdaki Çakışma Çözücü Kartını kullanarak seçim yapın veya vazgeçmek için 'git merge --abort' yazın.</span>`,
+        type: 'error'
+      };
+    }
+
     const isAncestor = this.isCommitAncestor(curCommitId, sourceCommitId);
 
     if (isAncestor) {
@@ -534,7 +600,7 @@ class GitEngine {
       this.branches[curBranch] = sourceCommitId;
       this.notify();
       return {
-        output: `<span class="text-emerald-400">Updating ${curCommitId || '0000'}..${sourceCommitId}\nFast-forward merge başarılı!</span>\n<span class="text-slate-300 text-xs">${curBranch} dalı doğrudan en son commite ilerletildi.</span>`,
+        output: `<span class="text-emerald-400">Updating ${curCommitId || '0000'}..${sourceCommitId}\nFast-forward merge başarılı!</span>\n<span class="text-slate-300 text-xs">${curBranch} dalı doğrudan en son commite ilerletildi. (Yeni merge commit'ine gerek duyulmadı)</span>`,
         type: 'success'
       };
     }
@@ -556,7 +622,7 @@ class GitEngine {
     this.notify();
 
     return {
-      output: `<span class="text-emerald-400">Merge yapıldı: '${sourceBranch}' dalı '${curBranch}' içine birleştirildi.</span>\n<span class="text-cyan-300 text-xs">[${curBranch} ${mergeCommitId}] Merge branch '${sourceBranch}' into ${curBranch}</span>`,
+      output: `<span class="text-emerald-400">3-Way Merge başarıyla yapıldı! İki dal kavşakta birleştirildi.</span>\n<span class="text-cyan-300 text-xs">[${curBranch} ${mergeCommitId}] Merge branch '${sourceBranch}' into ${curBranch} (Çift ebeveynli commit)</span>`,
       type: 'success'
     };
   }
@@ -720,6 +786,29 @@ index 83a21b..f42c19 100644
     };
   }
 
+  handleFetch(args) {
+    const remoteName = (args && args[0]) ? args[0] : 'origin';
+    if (!this.remotes[remoteName]) {
+      return { output: `<span class="text-rose-400">fatal: '${remoteName}' adında bir uzak depo bulunamadı.</span>`, type: 'error' };
+    }
+
+    // Eğer uzakta bekleyen bir simülasyon commit'i varsa devreye al
+    if (this.pendingRemoteCommit) {
+      const pBranch = this.pendingRemoteBranch || 'main';
+      this.remotes[remoteName].branches[pBranch] = this.pendingRemoteCommit;
+      this.notify();
+      return {
+        output: `<span class="text-emerald-400">remote: Enumerating objects: 5, done.\nremote: Counting objects: 100% (5/5), done.\nremote: Compressing objects: 100% (3/3), done.\nFrom ${this.remotes[remoteName].url}\n * [yeni commit]   ${pBranch} -> ${remoteName}/${pBranch}</span>\n<span class="text-cyan-300 text-xs">Uzak referanslar başarıyla indirildi. (Çalışma dizininize dokunulmadı; birleştirmek için 'git merge ${remoteName}/${pBranch}' çalıştırabilirsiniz)</span>`,
+        type: 'success'
+      };
+    }
+
+    return {
+      output: `<span class="text-emerald-400">remote: Nesneler listeleniyor: 4, tamam.\nFrom ${this.remotes[remoteName].url}\n * Tüm uzak referanslar güncellendi. (Already up to date)</span>`,
+      type: 'info'
+    };
+  }
+
   handlePull(args) {
     const remoteName = (args && args[0]) ? args[0] : 'origin';
     const curBranch = this.getCurrentBranch() || 'main';
@@ -728,17 +817,12 @@ index 83a21b..f42c19 100644
       return { output: `<span class="text-rose-400">fatal: '${remoteName}' uzak deposu bulunamadı.</span>`, type: 'error' };
     }
 
-    return {
-      output: `<span class="text-emerald-400">${this.remotes[remoteName].url} adresinden güncel değişiklikler çekildi.\nUpdating... Already up to date.</span>`,
-      type: 'info'
-    };
-  }
+    // 1. Önce Fetch yap
+    this.handleFetch(args);
 
-  handleFetch(args) {
-    return {
-      output: `<span class="text-emerald-400">remote: Enumerating objects: 4, done.\nremote: Total 4, reused 4\nTüm uzak dal referansları güncellendi.</span>`,
-      type: 'info'
-    };
+    // 2. Şimdi Merge yap
+    const remoteBranchRef = `${remoteName}/${curBranch}`;
+    return this.handleMerge([remoteBranchRef]);
   }
 
   handleReset(args) {

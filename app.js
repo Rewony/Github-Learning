@@ -50,8 +50,25 @@ class App {
     this.engine.onChange(() => {
       this.visualizer.render(this.engine);
       this.updatePrompt();
+      this.updateConflictUI();
       this.checkLevelGoals();
     });
+  }
+
+  updateConflictUI() {
+    const box = document.getElementById('conflict-helper-box');
+    if (!box) return;
+    if (this.engine.conflictState) {
+      box.classList.remove('hidden');
+      const fn = document.getElementById('conflict-filename');
+      const oc = document.getElementById('conflict-our-code');
+      const tc = document.getElementById('conflict-their-code');
+      if (fn) fn.innerText = this.engine.conflictState.file;
+      if (oc) oc.innerText = this.engine.conflictState.ourCode;
+      if (tc) tc.innerText = this.engine.conflictState.theirCode;
+    } else {
+      box.classList.add('hidden');
+    }
   }
 
   bindEvents() {
@@ -112,6 +129,50 @@ class App {
       this.initLevel(this.currentChallengeIndex);
       this.printTerminalLine(`<span class="text-amber-400">↺ Seviye sıfırlandı.</span>`, 'info');
     });
+
+    // Conflict Çözücü Butonları
+    const btnOurs = document.getElementById('btn-accept-ours');
+    if (btnOurs) {
+      btnOurs.addEventListener('click', () => {
+        if (!this.engine.conflictState) return;
+        const file = this.engine.conflictState.file;
+        if (!this.engine.stagingArea.includes(file)) this.engine.stagingArea.push(file);
+        this.engine.conflictState = null;
+        this.printTerminalLine(`<span class="text-emerald-400 font-bold">[✔ Çakışma Çözüldü]</span> <span class="text-slate-300">Yerel kodunuz seçildi ve ${file} sahneye alındı (staged). Şimdi commit atabilirsiniz: <code class="text-cyan-300 font-mono">git commit -m "Merge conflict app.js cozuldu"</code></span>`);
+        this.engine.notify();
+      });
+    }
+
+    const btnTheirs = document.getElementById('btn-accept-theirs');
+    if (btnTheirs) {
+      btnTheirs.addEventListener('click', () => {
+        if (!this.engine.conflictState) return;
+        const file = this.engine.conflictState.file;
+        if (!this.engine.stagingArea.includes(file)) this.engine.stagingArea.push(file);
+        this.engine.conflictState = null;
+        this.printTerminalLine(`<span class="text-emerald-400 font-bold">[✔ Çakışma Çözüldü]</span> <span class="text-slate-300">Ekip arkadaşınızın kodu kabul edildi ve ${file} sahneye alındı (staged). Şimdi commit atabilirsiniz: <code class="text-cyan-300 font-mono">git commit -m "Merge conflict app.js cozuldu"</code></span>`);
+        this.engine.notify();
+      });
+    }
+
+    const btnBoth = document.getElementById('btn-accept-both');
+    if (btnBoth) {
+      btnBoth.addEventListener('click', () => {
+        if (!this.engine.conflictState) return;
+        const file = this.engine.conflictState.file;
+        if (!this.engine.stagingArea.includes(file)) this.engine.stagingArea.push(file);
+        this.engine.conflictState = null;
+        this.printTerminalLine(`<span class="text-emerald-400 font-bold">[✔ Çakışma Çözüldü]</span> <span class="text-slate-300">İki kod bloğu birleştirildi ve ${file} sahneye alındı (staged). Şimdi commit atabilirsiniz: <code class="text-cyan-300 font-mono">git commit -m "Merge conflict app.js cozuldu"</code></span>`);
+        this.engine.notify();
+      });
+    }
+
+    const btnAbort = document.getElementById('btn-abort-conflict');
+    if (btnAbort) {
+      btnAbort.addEventListener('click', () => {
+        this.executeCommand('git merge --abort');
+      });
+    }
 
     window.inspectCommit = (commitId) => this.showCommitDetails(commitId);
   }
@@ -530,6 +591,17 @@ class App {
     if (capstoneBtn) {
       capstoneBtn.addEventListener('click', () => {
         const targetIdx = GIT_CHALLENGES.findIndex(c => c.id === 'c11');
+        if (targetIdx !== -1) {
+          this.switchMode('practice');
+          this.initLevel(targetIdx);
+        }
+      });
+    }
+
+    const advancedMergeBtn = document.getElementById('btn-go-to-advanced-merge');
+    if (advancedMergeBtn) {
+      advancedMergeBtn.addEventListener('click', () => {
+        const targetIdx = GIT_CHALLENGES.findIndex(c => c.id === 'c14');
         if (targetIdx !== -1) {
           this.switchMode('practice');
           this.initLevel(targetIdx);

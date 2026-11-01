@@ -265,6 +265,28 @@ const API_URL = "https://api.test.com";
    git commit -m "Merge: API adres cakismasi uretim URL'si secilerek cozuldu"
    ```
 
+### 6.4. Panik Anında Hayat Kurtaran: `git merge --abort`
+Birleştirme sırasında beklenenden çok fazla dosyada çakışma çıktıysa veya yanlış bir dala merge başlattıysanız:
+```bash
+git merge --abort
+```
+Bu komut, çalışma alanınızdaki tüm çakışma etiketlerini temizler ve projenizi merge butonuna basmadan önceki tertemiz haline geri döndürür. Hiçbir kodunuz kaybolmaz!
+
+### 6.5. Kodları Locale Çekme (Fetch vs Pull Farkı)
+Pek çok geliştirici `git pull` yapmaktan korkar çünkü çakışma çıkarsa ne yapacağını bilemez. Bunun en profesyonel çözümü iki adımlı akıştır:
+1. **Adım 1: Sadece İndir ve İncele (`git fetch`):**
+   ```bash
+   git fetch origin
+   # origin/main dalı bilgisayarınıza iner ancak mevcut çalışma kodunuza dokunmaz!
+   # Farkları incelemek için:
+   git diff main..origin/main
+   ```
+2. **Adım 2: Güvenle Birleştir (`git merge`):**
+   ```bash
+   git merge origin/main
+   ```
+Doğrudan `git pull origin main` komutu ise bu iki adımı tek seferde otomatik çalıştırır.
+
 ---
 
 ## Bölüm 7: Rebase vs. Merge Derinlemesine Analiz

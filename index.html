@@ -53,7 +53,7 @@
     <div class="flex items-center bg-slate-950/70 p-1 rounded-xl border border-slate-800 gap-1">
       <button id="tab-practice" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5">
         <span>🎮</span>
-        <span>Pratik & Senaryolar</span>
+        <span>Pratik & Senaryolar (16 Seviye)</span>
       </button>
       <button id="tab-learn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
         <span>📖</span>
@@ -137,8 +137,8 @@
         <!-- Alt: Seviyeler Listesi (Hızlı Geçiş) -->
         <div class="flex-1 flex flex-col p-3 overflow-hidden bg-slate-950/30">
           <div class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
-            <span>3.3 Müfredat Seviyeleri (11 Bölüm)</span>
-            <span class="text-slate-500 text-[10px]">Tıklayıp doğrudan geçebilirsiniz</span>
+            <span>Senaryo Seviyeleri (16 Bölüm)</span>
+            <span class="text-slate-500 text-[10px]">Temel + İleri Düzey Pull & Merge</span>
           </div>
           <div id="levels-list" class="flex-1 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
             <!-- Dinamik seviye butonları -->
@@ -206,6 +206,44 @@
             <span class="font-mono text-[11px] text-slate-300 ml-2">bash ~ cisco-devnet-terminal</span>
           </div>
           <span class="text-[10px] text-slate-500 font-mono">Tab: Tamamla | ↑ / ↓ : Geçmiş | 'help' komut listesi</span>
+        </div>
+
+        <!-- Çakışma (Conflict) Çözücü Canlı Yardımcı Kartı -->
+        <div id="conflict-helper-box" class="hidden m-3 p-3 bg-rose-950/60 border border-rose-500/50 rounded-xl shadow-lg shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse"></span>
+              <span class="text-rose-300 font-bold text-xs uppercase tracking-wider">⚡ Merge Çakışması (Conflict) Algılandı:</span>
+              <span id="conflict-filename" class="font-mono text-xs bg-slate-900 border border-slate-700 px-2 py-0.5 rounded text-white font-bold">app.js</span>
+            </div>
+            <span class="text-[10.5px] text-slate-400 font-sans">Seçim yapın veya 'git merge --abort' ile iptal edin</span>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] font-mono mb-2.5">
+            <div class="p-2.5 bg-slate-900/90 rounded-lg border border-cyan-500/30">
+              <span class="text-cyan-400 font-bold block mb-1 text-[10px] uppercase">HEAD (Senin Yerel Kodun):</span>
+              <div id="conflict-our-code" class="text-slate-300 break-all">const API_URL = "https://benim-yerel-test-api.com";</div>
+            </div>
+            <div class="p-2.5 bg-slate-900/90 rounded-lg border border-purple-500/30">
+              <span class="text-purple-400 font-bold block mb-1 text-[10px] uppercase">Gelen Dal (Ekip Arkadaşının Kodu):</span>
+              <div id="conflict-their-code" class="text-slate-300 break-all">const API_URL = "https://ekip-arkadasi-canli-api.com";</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-rose-900/50">
+            <button id="btn-accept-ours" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all shadow-md">
+              ✔ Benim Kodumu Seç
+            </button>
+            <button id="btn-accept-theirs" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition-all shadow-md">
+              ✔ Arkadaşımın Kodunu Kabul Et
+            </button>
+            <button id="btn-accept-both" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-md">
+              ✔ İkisini Birleştir
+            </button>
+            <button id="btn-abort-conflict" class="ml-auto px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
+              İptal Et (git merge --abort)
+            </button>
+          </div>
         </div>
 
         <div id="terminal-output" class="flex-1 p-4 overflow-y-auto space-y-1 font-mono text-xs scrollbar-thin select-text">

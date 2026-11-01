@@ -403,5 +403,252 @@ const GIT_CHALLENGES = [
       "7. git merge devnet-branch"
     ],
     solution: "git init\ngit add .\ngit commit -m \"Lab baslangic\"\ngit checkout -b devnet-branch\ngit commit -m \"Lab gelistirme\"\ngit checkout main\ngit merge devnet-branch"
+  },
+  {
+    id: "c12",
+    levelNumber: 12,
+    curriculumCode: "İleri Seviye: Çekme & İnceleme",
+    title: "Kodları Locale Çekme 1: git fetch vs git pull",
+    badge: "Fetch vs Pull",
+    badgeColor: "sky",
+    story: "Takım arkadaşın Ali, GitHub üzerindeki 'main' dalına yeni bir commit pushladı (canlı ağaçta görünüyor). Kendi çalışma alanını bozmadan önce sadece referansları incelemek için 'git fetch origin' yapmalı, ardından 'git merge origin/main' (veya doğrudan 'git pull') ile kodları yerel main dalına çekmelisin.",
+    setup: (engine) => {
+      engine.reset();
+      engine.isInitialized = true;
+      const c1 = engine.generateHash();
+      const c2_ali = engine.generateHash();
+
+      // Yerel durum (c1)
+      engine.commits[c1] = { id: c1, parents: [], msg: "Ortak başlangıç sürümü", timestamp: "09:00", branch: "main", files: ['app.py'] };
+      // Ali'nin GitHub'a attığı yeni commit (c2_ali)
+      engine.commits[c2_ali] = { id: c2_ali, parents: [c1], msg: "Ali: Veritabanı bağlantı havuzu eklendi", timestamp: "09:30", branch: "main", files: ['db.py'] };
+
+      engine.branches['main'] = c1;
+      engine.HEAD = { type: 'branch', name: 'main' };
+      engine.remotes['origin'] = {
+        url: 'https://github.com/sirket/proje.git',
+        branches: { main: c2_ali }
+      };
+      engine.pendingRemoteCommit = c2_ali;
+      engine.pendingRemoteBranch = 'main';
+      engine.shouldTriggerConflict = false;
+    },
+    goals: [
+      {
+        id: "g12_1",
+        label: "Uzak referansları indir ve canlı ağaçta origin/main'in geldiğini gör: git fetch origin",
+        check: (engine, cmd) => cmd && cmd.toLowerCase().includes('fetch')
+      },
+      {
+        id: "g12_2",
+        label: "İndirilen yenilikleri yerel main dalınla birleştir: git merge origin/main (veya git pull)",
+        check: (engine) => {
+          const curId = engine.getCurrentCommitId();
+          return curId && engine.commits[curId] && engine.commits[curId].msg.includes("Ali");
+        }
+      }
+    ],
+    hints: [
+      "1. Adım: 'git fetch origin' çalıştır. Dikkat et: grafikte 'origin/main' etiketinin Ali'nin commitine oturduğunu ama senin yerel 'main' dalının henüz eski yerde durduğunu göreceksin!",
+      "2. Adım: 'git merge origin/main' (veya doğrudan 'git pull') çalıştırarak yerel dalını Fast-Forward ile ileri sar."
+    ],
+    solution: "git fetch origin\ngit merge origin/main"
+  },
+  {
+    id: "c13",
+    levelNumber: 13,
+    curriculumCode: "İleri Seviye: Uzak Dal Takibi",
+    title: "Kodları Locale Çekme 2: Uzaktaki Dalı Bilgisayara İndirme",
+    badge: "Remote Tracking",
+    badgeColor: "purple",
+    story: "Takım arkadaşın Ayşe, GitHub üzerinde 'feature-odeme' adında yeni bir dal açtı ve kodlarını oraya pushladı. Sen bu dalı test etmek istiyorsun ama kendi bilgisayarında 'git branch' yazdığında bu dal görünmüyor! Uzaktaki bu dalı yereline çekip o dala geçmelisin.",
+    setup: (engine) => {
+      engine.reset();
+      engine.isInitialized = true;
+      const c1 = engine.generateHash();
+      const c2 = engine.generateHash();
+
+      engine.commits[c1] = { id: c1, parents: [], msg: "Ana sürüm", timestamp: "10:00", branch: "main", files: ['index.html'] };
+      engine.commits[c2] = { id: c2, parents: [c1], msg: "Ayşe: Kredi kartı ödeme formu", timestamp: "10:45", branch: "feature-odeme", files: ['odeme.js'] };
+
+      engine.branches['main'] = c1;
+      engine.HEAD = { type: 'branch', name: 'main' };
+      engine.remotes['origin'] = {
+        url: 'https://github.com/sirket/proje.git',
+        branches: { main: c1, 'feature-odeme': c2 }
+      };
+      engine.pendingRemoteCommit = c2;
+      engine.pendingRemoteBranch = 'feature-odeme';
+      engine.shouldTriggerConflict = false;
+    },
+    goals: [
+      {
+        id: "g13_1",
+        label: "Uzaktaki dalların listesini yenile: git fetch origin",
+        check: (engine, cmd) => cmd && cmd.toLowerCase().includes('fetch')
+      },
+      {
+        id: "g13_2",
+        label: "Uzaktaki 'feature-odeme' dalını locale çekip o dala geç: git switch feature-odeme",
+        check: (engine) => engine.getCurrentBranch() === 'feature-odeme'
+      }
+    ],
+    hints: [
+      "1. git fetch origin",
+      "2. git switch feature-odeme (veya git checkout feature-odeme)",
+      "Git, uzaktaki 'origin/feature-odeme' dalını otomatik algılayıp aynı isimde yerel bir takip dalı (tracking branch) oluşturacaktır!"
+    ],
+    solution: "git fetch origin\ngit switch feature-odeme"
+  },
+  {
+    id: "c14",
+    levelNumber: 14,
+    curriculumCode: "İleri Seviye: Çakışma Yönetimi",
+    title: "Merge İşlemi 1: Gerçek Bir Merge Conflict (Çakışma) Çözümü",
+    badge: "Conflict Çözümü",
+    badgeColor: "rose",
+    story: "Korkulan an geldi! Takım arkadaşın GitHub'daki app.js dosyasında API URL'sini değiştirdi. Sen de aynı dosyada kendi yerelinde API URL'sini değiştirdin ve commit attın. Şimdi 'git pull origin main' yapacaksın ve Git çakışma (conflict) fırlatacak! Çakışmayı çözüp merge commit'ini tamamla.",
+    setup: (engine) => {
+      engine.reset();
+      engine.isInitialized = true;
+      const c1 = engine.generateHash();
+      const c2_senin = engine.generateHash();
+      const c2_arkadas = engine.generateHash();
+
+      engine.commits[c1] = { id: c1, parents: [], msg: "Ortak temel kod", timestamp: "11:00", branch: "main", files: ['app.js'] };
+      engine.commits[c2_senin] = { id: c2_senin, parents: [c1], msg: "Senin yerel commitin: Yerel test API tanımlandı", timestamp: "11:15", branch: "main", files: ['app.js'] };
+      engine.commits[c2_arkadas] = { id: c2_arkadas, parents: [c1], msg: "Arkadaşının commiti: Canlı API URL güncellendi", timestamp: "11:20", branch: "main", files: ['app.js'] };
+
+      engine.branches['main'] = c2_senin;
+      engine.HEAD = { type: 'branch', name: 'main' };
+      engine.remotes['origin'] = {
+        url: 'https://github.com/sirket/proje.git',
+        branches: { main: c2_arkadas }
+      };
+      engine.pendingRemoteCommit = c2_arkadas;
+      engine.pendingRemoteBranch = 'main';
+      engine.shouldTriggerConflict = true; // İlk merge denemesinde çatışma fırlat
+    },
+    goals: [
+      {
+        id: "g14_1",
+        label: "GitHub yeniliklerini çekmeye çalış ve çakışmayı (CONFLICT) gör: git pull origin main",
+        check: (engine) => engine.conflictState !== null || engine.branches['main'] !== undefined
+      },
+      {
+        id: "g14_2",
+        label: "Çakışmayı çöz, sahneye ekle ve merge commit'ini oluştur: git add app.js && git commit -m \"...\"",
+        check: (engine) => {
+          const curId = engine.getCurrentCommitId();
+          if (!curId) return false;
+          const c = engine.commits[curId];
+          return c && c.parents && c.parents.length >= 2;
+        }
+      }
+    ],
+    hints: [
+      "1. git pull origin main yaz ve Enter'a bas. Terminalde 'CONFLICT (content): Merge conflict in app.js' uyarısını göreceksin.",
+      "2. Ekrandaki Çakışma Çözücü kartından veya doğrudan 'git add app.js' yazarak çözümü sahnele.",
+      "3. Son olarak 'git commit -m \"Merge conflict app.js cozuldu\"' komutuyla birleştirmeyi mühürle!"
+    ],
+    solution: "git pull origin main\ngit add app.js\ngit commit -m \"Merge conflict app.js cozuldu\""
+  },
+  {
+    id: "c15",
+    levelNumber: 15,
+    curriculumCode: "İleri Seviye: Kurtarma",
+    title: "Merge İşlemi 2: Panik Yok! Merge'i Güvenle İptal Etme (git merge --abort)",
+    badge: "Merge Abort",
+    badgeColor: "amber",
+    story: "Büyük bir birleştirme sırasında birden fazla dosyada devasa çakışmalar çıktı. O an çözmek için vaktin yok veya yanlış bir dala birleştirdiğini fark ettin. Tek bir dosya dahi kaybetmeden her şeyi merge öncesi temiz haline döndürmek için 'git merge --abort' kullanmalısın.",
+    setup: (engine) => {
+      engine.reset();
+      engine.isInitialized = true;
+      const c1 = engine.generateHash();
+      const c2 = engine.generateHash();
+      const c3 = engine.generateHash();
+
+      engine.commits[c1] = { id: c1, parents: [], msg: "Stabil sürüm", timestamp: "12:00", branch: "main", files: ['app.py'] };
+      engine.commits[c2] = { id: c2, parents: [c1], msg: "Senin yerel calisman", timestamp: "12:10", branch: "main", files: ['app.py'] };
+      engine.commits[c3] = { id: c3, parents: [c1], msg: "Karmasik daldaki degisiklikler", timestamp: "12:20", branch: "feature-karisik", files: ['app.py'] };
+
+      engine.branches['main'] = c2;
+      engine.branches['feature-karisik'] = c3;
+      engine.HEAD = { type: 'branch', name: 'main' };
+      engine.shouldTriggerConflict = true;
+      engine.preMergeState = c2;
+    },
+    goals: [
+      {
+        id: "g15_1",
+        label: "Birleştirmeyi başlat ve çakışma durumuna gir: git merge feature-karisik",
+        check: (engine) => engine.conflictState !== null
+      },
+      {
+        id: "g15_2",
+        label: "Merge'i tamamen iptal et ve temiz haline dön: git merge --abort",
+        check: (engine, cmd) => engine.conflictState === null && cmd && cmd.includes('--abort')
+      }
+    ],
+    hints: [
+      "1. git merge feature-karisik komutu ile birleştirmeyi başlat (çakışma çıkacak).",
+      "2. git merge --abort yazarak merge işlemini güvenle geri al."
+    ],
+    solution: "git merge feature-karisik\ngit merge --abort"
+  },
+  {
+    id: "c16",
+    levelNumber: 16,
+    curriculumCode: "İleri Seviye: Push Çözümü",
+    title: "Non-Fast-Forward Hatası: [rejected] Push Çözüm Döngüsü",
+    badge: "Non-Fast-Forward",
+    badgeColor: "rose",
+    story: "Yerel kodunu doğrudan 'git push origin main' yapmaya çalıştın ama GitHub reddetti: '[rejected - non-fast-forward] Updates were rejected because the remote contains work that you do not have locally.' Bu klasik hatanın tam çözüm döngüsünü uygula: Önce pull et, birleştir, sonra pushla!",
+    setup: (engine) => {
+      engine.reset();
+      engine.isInitialized = true;
+      const c1 = engine.generateHash();
+      const c2_senin = engine.generateHash();
+      const c2_uzak = engine.generateHash();
+
+      engine.commits[c1] = { id: c1, parents: [], msg: "Ortak taban", timestamp: "13:00", branch: "main", files: ['index.html'] };
+      engine.commits[c2_senin] = { id: c2_senin, parents: [c1], msg: "Senin yerel committin", timestamp: "13:10", branch: "main", files: ['style.css'] };
+      engine.commits[c2_uzak] = { id: c2_uzak, parents: [c1], msg: "GitHub'daki yeni commit", timestamp: "13:15", branch: "main", files: ['readme.txt'] };
+
+      engine.branches['main'] = c2_senin;
+      engine.HEAD = { type: 'branch', name: 'main' };
+      engine.remotes['origin'] = {
+        url: 'https://github.com/sirket/proje.git',
+        branches: { main: c2_uzak }
+      };
+      engine.pendingRemoteCommit = c2_uzak;
+      engine.pendingRemoteBranch = 'main';
+      engine.shouldTriggerConflict = false;
+    },
+    goals: [
+      {
+        id: "g16_1",
+        label: "Önce uzaktaki yenilikleri yereline çekip birleştir: git pull origin main",
+        check: (engine) => {
+          const curId = engine.getCurrentCommitId();
+          if (!curId) return false;
+          const c = engine.commits[curId];
+          return c && c.parents && c.parents.length >= 2;
+        }
+      },
+      {
+        id: "g16_2",
+        label: "Birleşmiş kodu başarıyla GitHub'a gönder: git push origin main",
+        check: (engine) => {
+          const curId = engine.getCurrentCommitId();
+          return engine.remotes['origin'] && engine.remotes['origin'].branches['main'] === curId;
+        }
+      }
+    ],
+    hints: [
+      "1. git pull origin main çalıştır. Git otomatik 3-way merge yapacak.",
+      "2. git push origin main çalıştır. Artık yerel kodun uzaktakini kapsadığı için push kabul edilecek!"
+    ],
+    solution: "git pull origin main\ngit push origin main"
   }
 ];
